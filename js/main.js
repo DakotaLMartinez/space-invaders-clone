@@ -11,7 +11,7 @@ const bullet = new Bullet({
   width: 5,
   height: 10,
   color: "white",
-  speed: { x: 0, y: 4.5 },
+  speed: { x: 0, y: 3.5 },
 });
 
 game.start();

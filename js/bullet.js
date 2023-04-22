@@ -23,6 +23,7 @@ class Bullet {
   move(deltaTime) {
     this.y += this.speed.y * deltaTime;
     this.x += this.speed.x * deltaTime;
+    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
   }
 
   isOutOfBounds(containerHeight, containerWidth) {

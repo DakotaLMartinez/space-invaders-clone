@@ -1,29 +1,64 @@
 class Player {
-  constructor(position) {
-    this.size = 74;
-    this.element = Player.createElement(this.size);
-    this.position = position;
+  constructor({ x, y, width, height, speed, gameWidth }) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.speed = speed;
+    this.gameWidth = gameWidth;
+    this.element = Player.createElement(this);
   }
 
-  static createElement(size) {
+  static createElement(player) {
     const el = document.createElement("img");
     el.id = "player";
     el.src = "assets/images/ship-transparent.png";
-    el.alt = "spaeship";
-    el.height = `${size}`;
-    el.width = `${size}`;
+    el.alt = "spaceship";
+    el.height = player.height;
+    el.width = player.width;
+    el.style.transform = `translate(${player.x}px, ${player.y}px)`;
     return el;
   }
 
-  draw() {
-    this.element.style.top = `${this.position.top}px`;
-    this.element.style.left = `${this.position.left}px`;
+  move(direction, deltaTime) {
+    const delta = this.speed * deltaTime;
+    if (direction === "left") {
+      this.x = Math.max(0, this.x - delta);
+    } else if (direction === "right") {
+      this.x = Math.min(this.gameWidth - this.width, this.x + delta);
+    }
+    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
+  }
+
+  update(direction, deltaTime) {
+    if (["left", "right"].includes(direction)) {
+      this.move(direction, deltaTime);
+    }
+  }
+
+  shoot() {
+    return new Bullet({
+      x: this.center().x - 3,
+      y: this.y + 5,
+      width: 6,
+      height: 10,
+      color: "red",
+      speed: { x: 0, y: -3.5 },
+    });
   }
 
   center() {
     return {
-      x: this.position.left + this.size / 2,
-      y: this.position.top + this.size / 2,
+      x: this.x + this.width / 2,
+      y: this.y + this.height / 2,
+    };
+  }
+}
+
+if (typeof process !== "undefined") {
+  if (process.env.NODE_ENV === "test") {
+    module.exports = {
+      Player,
     };
   }
 }

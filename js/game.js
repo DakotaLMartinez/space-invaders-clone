@@ -1,22 +1,3 @@
-const gameScreen = document.querySelector('#game');
-const player = new Player({ top: 700, left: 350 })
-gameScreen.append(player.element);
-window.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowLeft" && player.position.left > 0) {
-    player.position.left -= 5;
-    player.draw();
-  } else if (e.key === "ArrowRight" && player.position.left < 700) {
-    player.position.left += 5;
-    player.draw();
-  }
-  if (e.code === "Space") {
-    const bullet = new Bullet({ top: 700, left: player.position.left + 34 }, "up");
-    gameScreen.append(bullet.element);
-    bullet.move();
-  }
-});
-
-
 class Game {
   constructor({ container }) {
     this.container = container;
@@ -25,6 +6,42 @@ class Game {
     this.frameRate = 60;
     this.frameDuration = 1000 / this.frameRate;
     this.loop = this.loop.bind(this); // Bind the loop method to the instance
+
+    this.player = new Player({
+      x: container.clientWidth / 2 - 37,
+      y: container.clientHeight - 74,
+      width: 74,
+      height: 74,
+      speed: 5,
+      gameWidth: this.container.clientWidth
+    });
+
+    this.keyStates = {
+      ArrowLeft: false,
+      ArrowRight: false,
+    };
+
+    this.container.append(this.player.element);
+    this.setupPlayerControls();
+  }
+
+  setupPlayerControls() {
+    window.addEventListener("keydown", (e) => {
+      if (this.keyStates.hasOwnProperty(e.key)) {
+        this.keyStates[e.key] = true;
+      }
+
+      if (e.code === "Space") {
+        const bullet = this.player.shoot();
+        this.addBullet(bullet);
+      }
+    });
+
+    window.addEventListener("keyup", (e) => {
+      if (this.keyStates.hasOwnProperty(e.key)) {
+        this.keyStates[e.key] = false;
+      }
+    });
   }
 
   addBullet(bullet) {
@@ -43,7 +60,6 @@ class Game {
   updateBullets(deltaTime) {
     this.bullets.forEach((bullet) => {
       bullet.update(deltaTime);
-      bullet.element.style.transform = `translate(${bullet.x}px, ${bullet.y}px)`;
       if (
         bullet.isOutOfBounds(
           this.container.clientHeight,
@@ -55,10 +71,22 @@ class Game {
     });
   }
 
+  updatePlayer(deltaTime) {
+    if (this.keyStates.ArrowLeft) {
+      this.player.update("left", deltaTime);
+    }
+    if (this.keyStates.ArrowRight) {
+      this.player.update("right", deltaTime);
+    }
+  }
+
   loop(currentTime) {
     // Calculate deltaTime
     if (this.lastFrameTime) {
       const deltaTime = (currentTime - this.lastFrameTime) / this.frameDuration;
+
+      // Update player
+      this.updatePlayer(deltaTime);
 
       // Update bullets
       this.updateBullets(deltaTime);

@@ -25,3 +25,11 @@ function isCollision(first, second) {
   const centerDistance = deltaX + deltaY;
   return (first.size + second.size) ** 2 >= centerDistance;
 }
+
+if (typeof process !== "undefined") {
+  if (process.env.NODE_ENV === "test") {
+    module.exports = {
+      Utils,
+    };
+  }
+}

@@ -18,13 +18,13 @@
     fixed;
   z-index: -1;
   filter: brightness(80%);
-  background-size: contain;
+  background-size: cover;
 }
 
 #player {
-  position: relative;
-  top: 700px;
-  left: 350px;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .bullet {

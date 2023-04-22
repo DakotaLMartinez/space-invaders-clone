@@ -1,6 +1,3 @@
-// Import the Bullet class
-const { Bullet } = require("./bullet.js");
-
 describe("Bullet", () => {
   let bullet;
 
