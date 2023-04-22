@@ -1,0 +1,23 @@
+{
+  "name": "space-invaders-clone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "html",
+    "css",
+    "javascript",
+    "game",
+    "development"
+  ],
+  "author": "DakotaLMartinez",
+  "license": "ISC",
+  "dependencies": {
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
+    "jsdom": "^21.1.1"
+  }
+}

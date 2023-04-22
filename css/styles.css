@@ -1,6 +1,6 @@
 #game {
   position: relative;
-
+  overflow: hidden;
   height: 774px;
   width: 774px;
   margin: 0 auto;
@@ -28,9 +28,7 @@
 }
 
 .bullet {
-  height: 6px;
-  width: 6px;
-  background: white;
-  border-radius: 100%;
   position: absolute;
+  top: 0;
+  left: 0;
 }

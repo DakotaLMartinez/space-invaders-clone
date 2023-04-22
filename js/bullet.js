@@ -1,55 +1,54 @@
 class Bullet {
-  constructor(position, direction) {
-    this.size = 6;
-    this.element = Bullet.createElement();
-    this.position = position;
-    this.direction = direction;
-    this.speed = 2;
+  constructor({ x, y, width, height, color, speed }) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.color = color;
+    this.speed = speed;
+    this.element = Bullet.createElement(this);
   }
 
-  static createElement() {
+  static createElement(bullet) {
     const el = document.createElement("div");
     el.className = "bullet";
+    el.style.backgroundColor = bullet.color;
+    el.style.width = bullet.width + "px";
+    el.style.height = bullet.height + "px";
+    el.style.borderRadius = "50%";
+    el.style.transform = `translate(${bullet.x}px, ${bullet.y}px)`;
     return el;
   }
 
-  draw() {
-    this.element.style.top = `${this.position.top}px`;
-    this.element.style.left = `${this.position.left}px`;
+  move(deltaTime) {
+    this.y += this.speed.y * deltaTime;
+    this.x += this.speed.x * deltaTime;
   }
 
-  move() {
-    const movingId = setInterval(() => {
-      if (this.isInGame()) {
-        if (this.isMovingUp()) {
-          this.position.top -= this.speed;
-        } else if (this.isMovingDown()) {
-          this.position.top += this.speed;
-        }
-        this.draw();
-      } else {
-        clearInterval(movingId);
-        this.element.remove();
-      }
-    }, 10)
+  isOutOfBounds(containerHeight, containerWidth) {
+    const inYRange =
+      -this.height < this.y && this.y < containerHeight + this.height;
+    const inXRange =
+      -this.width < this.x && this.x < containerWidth + this.width;
+    return !(inXRange && inYRange)
   }
 
-  isMovingUp() {
-    return this.direction === "up";
-  }
-
-  isMovingDown() {
-    return this.direction === "down";
-  }
-  
-  isInGame() {
-    return this.position.top > -5 && this.position.top < 775;
+  update(deltaTime) {
+    this.move(deltaTime);
   }
 
   center() {
     return {
-      x: this.position.left + this.size / 2,
-      y: this.position.top + this.size / 2
-    }
+      x: this.x + this.width / 2,
+      y: this.y + this.height / 2,
+    };
+  }
+}
+
+if (typeof process !== 'undefined') {
+  if (process.env.NODE_ENV === "test") {
+    module.exports = {
+      Bullet,
+    };
   }
 }
