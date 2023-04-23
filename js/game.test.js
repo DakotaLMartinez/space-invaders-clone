@@ -57,4 +57,46 @@ describe("Game", () => {
     game.updatePlayer(1);
     expect(game.player.x).toBe(initialX);
   });
+
+  test("player onCollision is called when a bullet collides with the player", () => {
+    const enemyBullet = new Bullet({
+      x: game.player.x + game.player.width / 2,
+      y: game.player.y - 10,
+      width: 6,
+      height: 10,
+      color: "blue",
+      speed: { x: 0, y: 3.5 },
+    });
+
+    game.addBullet(enemyBullet);
+
+    const playerOnCollisionSpy = jest.spyOn(game.player, "onCollision");
+
+    const playerRectMock = {
+      left: game.player.x,
+      right: game.player.x + game.player.width,
+      top: game.player.y,
+      bottom: game.player.y + game.player.height,
+    };
+
+    const bulletRectMock = {
+      left: enemyBullet.x,
+      right: enemyBullet.x + enemyBullet.width,
+      top: enemyBullet.y,
+      bottom: enemyBullet.y + enemyBullet.height,
+    };
+
+    game.player.element.getBoundingClientRect = jest.fn(() => playerRectMock);
+    enemyBullet.element.getBoundingClientRect = jest.fn(() => bulletRectMock);
+
+    bulletRectMock.top += enemyBullet.speed.y;
+    bulletRectMock.bottom += enemyBullet.speed.y;
+
+    game.updateBullets(1);
+
+    
+    expect(playerOnCollisionSpy).toHaveBeenCalled();
+
+    playerOnCollisionSpy.mockRestore();
+  });
 });

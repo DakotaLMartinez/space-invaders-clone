@@ -20,6 +20,18 @@ class Bullet {
     return el;
   }
 
+  isColliding(spaceShip) {
+    const bulletRect = this.element.getBoundingClientRect();
+    const spaceShipRect = spaceShip.element.getBoundingClientRect();
+
+    return (
+      bulletRect.left < spaceShipRect.right &&
+      bulletRect.right > spaceShipRect.left &&
+      bulletRect.top < spaceShipRect.bottom &&
+      bulletRect.bottom > spaceShipRect.top
+    );
+  }
+
   move(deltaTime) {
     this.y += this.speed.y * deltaTime;
     this.x += this.speed.x * deltaTime;
@@ -31,7 +43,7 @@ class Bullet {
       -this.height < this.y && this.y < containerHeight + this.height;
     const inXRange =
       -this.width < this.x && this.x < containerWidth + this.width;
-    return !(inXRange && inYRange)
+    return !(inXRange && inYRange);
   }
 
   update(deltaTime) {
@@ -46,7 +58,7 @@ class Bullet {
   }
 }
 
-if (typeof process !== 'undefined') {
+if (typeof process !== "undefined") {
   if (process.env.NODE_ENV === "test") {
     module.exports = {
       Bullet,

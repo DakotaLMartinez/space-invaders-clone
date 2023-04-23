@@ -47,6 +47,14 @@ class Player {
     });
   }
 
+  explode() {
+    this.element.src = "assets/images/explosion.webp";
+  }
+
+  onCollision() {
+    this.explode();
+  }
+
   center() {
     return {
       x: this.x + this.width / 2,
