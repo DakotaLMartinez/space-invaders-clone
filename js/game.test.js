@@ -82,19 +82,15 @@ describe("Game", () => {
     const bulletRectMock = {
       left: enemyBullet.x,
       right: enemyBullet.x + enemyBullet.width,
-      top: enemyBullet.y,
-      bottom: enemyBullet.y + enemyBullet.height,
+      top: enemyBullet.y + enemyBullet.speed.y,
+      bottom: enemyBullet.y + enemyBullet.height + enemyBullet.speed.y,
     };
 
     game.player.element.getBoundingClientRect = jest.fn(() => playerRectMock);
     enemyBullet.element.getBoundingClientRect = jest.fn(() => bulletRectMock);
 
-    bulletRectMock.top += enemyBullet.speed.y;
-    bulletRectMock.bottom += enemyBullet.speed.y;
-
     game.updateBullets(1);
 
-    
     expect(playerOnCollisionSpy).toHaveBeenCalled();
 
     playerOnCollisionSpy.mockRestore();
