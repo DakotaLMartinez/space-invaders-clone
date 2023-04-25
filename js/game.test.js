@@ -95,4 +95,61 @@ describe("Game", () => {
 
     playerOnCollisionSpy.mockRestore();
   });
+
+  test("spawnEnemy method adds an enemy to the game", () => {
+    const initialEnemyCount = game.enemies.length;
+    game.spawnEnemy();
+    expect(game.enemies.length).toBe(initialEnemyCount + 1);
+    expect(game.container.contains(game.enemies[0].element)).toBe(true);
+  });
+
+  test("startSpawningEnemies and stopSpawningEnemies control enemy spawning", () => {
+    jest.useFakeTimers();
+
+    game.startSpawningEnemies();
+    jest.advanceTimersByTime(game.enemySpawnInterval * 3);
+    expect(game.enemies.length).toBe(4);
+
+    game.stopSpawningEnemies();
+    jest.advanceTimersByTime(game.enemySpawnInterval * 3);
+    expect(game.enemies.length).toBe(4);
+
+    jest.useRealTimers();
+  });
+
+  test("Game loop stops when the player is destroyed", () => {
+    const game = new Game({ container });
+
+    const loopSpy = jest.spyOn(game, "loop");
+    const gameOverSpy = jest.spyOn(game, "gameOver");
+
+    game.player.onCollision(); // Destroy the player
+
+    expect(gameOverSpy).toHaveBeenCalled();
+
+    // Call loop once more to make sure it stops running
+    game.loop(0);
+
+    // loop should have been called only once (during game.start())
+    expect(loopSpy).toHaveBeenCalledTimes(1);
+
+    loopSpy.mockRestore();
+    gameOverSpy.mockRestore();
+  });
+
+  test("Game over calls appropriate methods to stop the game", () => {
+    const stopSpawningEnemiesSpy = jest.spyOn(game, "stopSpawningEnemies");
+    const enemyStopShootingSpy = jest.spyOn(Enemy.prototype, "stopShooting");
+
+    game.spawnEnemy();
+
+    // Call the gameOver method
+    game.gameOver();
+
+    expect(stopSpawningEnemiesSpy).toHaveBeenCalled(); // stopSpawningEnemies called
+    expect(enemyStopShootingSpy).toHaveBeenCalled(); // stopShooting called on the enemy
+
+    stopSpawningEnemiesSpy.mockRestore();
+    enemyStopShootingSpy.mockRestore();
+  });
 });

@@ -1,5 +1,5 @@
 class Player {
-  constructor({ x, y, width, height, speed, gameWidth }) {
+  constructor({ x, y, width, height, speed, gameWidth, onPlayerExplosion }) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -7,6 +7,7 @@ class Player {
     this.speed = speed;
     this.gameWidth = gameWidth;
     this.element = Player.createElement(this);
+    this.onPlayerExplosion = onPlayerExplosion;
   }
 
   static createElement(player) {
@@ -48,7 +49,8 @@ class Player {
   }
 
   explode() {
-    this.element.src = "assets/images/explosion.webp";
+    this.element.src = "assets/images/explosion-transparent.png";
+    this.onPlayerExplosion();
   }
 
   onCollision() {
