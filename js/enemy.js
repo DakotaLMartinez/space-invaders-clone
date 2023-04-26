@@ -1,5 +1,5 @@
 class Enemy {
-  constructor({ x, y, width, height, gameWidth, speed, onShoot }) {
+  constructor({ x, y, width, height, gameWidth, speed, onShoot, game }) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -8,10 +8,11 @@ class Enemy {
     this.speed = speed;
     this.element = Enemy.createElement(this);
     this.onShoot = onShoot;
-    this.shootInterval = 3000; // Shoot every 3000 ms
+    this.shootInterval = 60 * 4; // Shoot every 4 seconds at 60 fps
     this.shootTimer = null;
+    this.timeSinceLastShot = 0;
     this.setupSounds();
-    this.startShooting();
+    this.game = game;
   }
 
   static createElement(enemy) {
@@ -38,23 +39,15 @@ class Enemy {
 
   onCollision() {
     // Do something when the enemy is hit by a player's bullet
+    if (!this.dead) {
+      this.dead = true;
+      this.explode();
+    }
+  }
+  
+  explode() {
     this.element.src = "assets/images/explosion-transparent.png";
     this.explosion.play();
-    this.dead = true;
-    this.stopShooting();
-    window.setTimeout(() => {
-      this.element.remove();
-    }, 2000);
-  }
-
-  startShooting() {
-    this.shootTimer = setInterval(() => {
-      this.shoot();
-    }, this.shootInterval);
-  }
-
-  stopShooting() {
-    clearInterval(this.shootTimer);
   }
 
   shoot() {
@@ -86,6 +79,17 @@ class Enemy {
 
   update(deltaTime) {
     this.move(deltaTime);
+    this.shootIfReady(deltaTime);
+  }
+
+  shootIfReady(deltaTime) {
+    this.timeSinceLastShot += deltaTime;
+    if (this.timeSinceLastShot >= this.shootInterval) {
+      if (!this.game.isPaused && !this.dead) {
+        this.shoot();
+      }
+      this.timeSinceLastShot = 0;
+    }
   }
 }
 

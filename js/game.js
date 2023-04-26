@@ -4,7 +4,9 @@ class Game {
     this.isGameOver = false;
     this.bullets = [];
     this.enemies = [];
-    this.enemySpawnInterval = 4000; // Spawn an enemy every 2000 ms
+    this.isPaused = false;
+    this.timeSinceLastSpawn = 60 * 3;
+    this.enemySpawnInterval = 60 * 3; // Spawn an enemy every 3 seconds at 60fps
     this.enemySpawnTimer = null;
     this.lastFrameTime = null;
     this.frameRate = 60;
@@ -43,6 +45,10 @@ class Game {
         const bullet = this.player.shoot();
         this.addBullet(bullet);
       }
+
+      if (e.key === "p" || e.key === "P") {
+        this.togglePause();
+      }
     };
     this.keyupHandler = (e) => {
       if (this.keyStates.hasOwnProperty(e.key)) {
@@ -64,16 +70,12 @@ class Game {
       volume: 0.7,
     });
     setTimeout(() => {
-      this.backgroundMusic.play()
-    }, 200)
+      this.backgroundMusic.play();
+    }, 200);
   }
 
   gameOver() {
     this.isGameOver = true;
-    this.enemies.forEach((enemy) => {
-      enemy.stopShooting();
-    });
-    this.stopSpawningEnemies();
   }
 
   addBullet(bullet) {
@@ -119,6 +121,7 @@ class Game {
         this.enemies.forEach((enemy) => {
           if (bullet.isColliding(enemy)) {
             enemy.onCollision();
+            this.removeEnemy(enemy);
             collided = true;
           }
         });
@@ -145,6 +148,16 @@ class Game {
     });
   }
 
+  removeEnemy(enemy) {
+    const index = this.enemies.indexOf(enemy);
+    if (index > -1) {
+      this.enemies.splice(index, 1);
+      window.setTimeout(() => {
+        enemy.element.remove();
+      }, 2000);
+    }
+  }
+
   spawnEnemy() {
     const enemyWidth = 46;
     const enemyHeight = 82;
@@ -160,6 +173,7 @@ class Game {
         this.addBullet(bullet);
       },
       speed: { x: 0, y: 0 },
+      game: this,
     });
 
     this.enemies.push(enemy);
@@ -168,25 +182,30 @@ class Game {
 
   loop(currentTime) {
     if (this.isGameOver) {
-      this.gameOverSound.play()
+      this.gameOverSound.play();
       return;
     }
-    // Calculate deltaTime
-    if (this.lastFrameTime) {
-      const deltaTime = (currentTime - this.lastFrameTime) / this.frameDuration;
+    if (!this.isPaused) {
+      // Calculate deltaTime
+      if (this.lastFrameTime) {
+        const deltaTime =
+          (currentTime - this.lastFrameTime) / this.frameDuration;
 
-      // Update player
-      this.updatePlayer(deltaTime);
+        // Update player
+        this.updatePlayer(deltaTime);
 
-      // Update enemies
-      this.updateEnemies(deltaTime);
+        // Update enemies
+        this.updateEnemies(deltaTime);
 
-      // Update bullets
-      this.updateBullets(deltaTime);
+        // Update bullets
+        this.updateBullets(deltaTime);
 
-      // if (Math.random() < 0.002) {
-      //   this.spawnEnemy();
-      // }
+        this.timeSinceLastSpawn += deltaTime;
+        if (this.timeSinceLastSpawn >= this.enemySpawnInterval) {
+          this.spawnEnemy();
+          this.timeSinceLastSpawn = 0;
+        }
+      }
     }
 
     this.lastFrameTime = currentTime;
@@ -195,18 +214,10 @@ class Game {
 
   start() {
     this.loop(0);
-    this.startSpawningEnemies();
   }
 
-  startSpawningEnemies() {
-    this.spawnEnemy();
-    this.enemySpawnTimer = setInterval(() => {
-      this.spawnEnemy();
-    }, this.enemySpawnInterval);
-  }
-
-  stopSpawningEnemies() {
-    clearInterval(this.enemySpawnTimer);
+  togglePause() {
+    this.isPaused = !this.isPaused;
   }
 }
 
