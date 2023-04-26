@@ -22,7 +22,7 @@ class Enemy {
     el.alt = "enemy";
     el.height = enemy.height;
     el.width = enemy.width;
-    el.dataset.x = enemy.x;
+    el.style.transform = `translate(${this.x}px, ${this.y}px)`;
     return el;
   }
 
