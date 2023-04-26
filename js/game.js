@@ -203,7 +203,7 @@ class Game {
     const enemyWidth = 46;
     const enemyHeight = 82;
     const x = Math.random() * (this.container.clientWidth - enemyWidth);
-    const y = 46;
+    const y = 23;
     const enemy = new Enemy({
       x,
       y,

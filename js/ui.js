@@ -3,6 +3,9 @@ class UI {
     this.game = game;
     this.container = game.container;
 
+    this.topBarElement = document.createElement("div");
+    this.topBarElement.className = "topBar";
+
     this.levelElement = document.createElement("span");
     this.levelElement.className = "level-display";
 
@@ -12,8 +15,9 @@ class UI {
     this.mainMessageElement = document.createElement("div");
     this.mainMessageElement.className = "main-message-display";
 
-    this.container.appendChild(this.levelElement);
-    this.container.appendChild(this.scoreElement);
+    this.topBarElement.appendChild(this.levelElement);
+    this.topBarElement.appendChild(this.scoreElement);
+    this.container.appendChild(this.topBarElement);
     this.container.appendChild(this.mainMessageElement);
   }
 

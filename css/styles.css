@@ -1,3 +1,6 @@
+* {
+  box-sizing: border-box;
+}
 #game {
   position: relative;
   overflow: hidden;
@@ -30,6 +33,25 @@
   position: absolute;
   top: 0;
   left: 0;
+}
+/* 
+this.levelElement = document.createElement("span");
+    this.levelElement.className = "level-display";
+
+    this.scoreElement = document.createElement("span");
+    this.scoreElement.className = "score-display"; */
+.topBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  padding: 0 2em;
+}
+.score-display {
+  
 }
 
 .main-message-display {
