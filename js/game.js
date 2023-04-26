@@ -1,10 +1,22 @@
 class Game {
   constructor({ container }) {
     this.container = container;
+    this.ui = new UI(this);
+    this.isPaused = true;
+    this.level = 1;
+    this.score = 0;
+    this.mainMessages = [
+      "Level 1",
+      "Instructions:",
+      "Use Left and Right Arrow keys to move",
+      "Press Spacebar to shoot",
+      "Press P to pause/unpause",
+    ];
+    this.ui.display();
     this.isGameOver = false;
+
     this.bullets = [];
     this.enemies = [];
-    this.isPaused = false;
     this.timeSinceLastSpawn = 60 * 3;
     this.enemySpawnInterval = 60 * 3; // Spawn an enemy every 3 seconds at 60fps
     this.enemySpawnTimer = null;
@@ -28,7 +40,7 @@ class Game {
     this.keyStates = {
       ArrowLeft: false,
       ArrowRight: false,
-      " ": false
+      " ": false,
     };
 
     this.container.append(this.player.element);
@@ -65,13 +77,38 @@ class Game {
       isLoop: true,
       volume: 0.7,
     });
+  }
+
+  levelUp() {
+    this.level++;
+    this.isPaused = true;
+    this.mainMessages = [`Level ${this.level}`, "Get ready!"];
+    this.ui.display();
+
     setTimeout(() => {
+      this.togglePause();
+      // Update enemy spawn and fire rates here
+    }, 3000); // Pause for 3 seconds before resuming
+  }
+
+  togglePause(messages = ["Paused"]) {
+    this.isPaused = !this.isPaused;
+    if (this.isPaused) {
+      this.backgroundMusic.pause();
+      this.mainMessages = messages;
+      this.container.classList.add("paused"); // Add 'paused' class when the game is paused
+    } else {
+      this.mainMessages = [];
       this.backgroundMusic.play();
-    }, 200);
+      this.container.classList.remove("paused"); // Remove 'paused' class when the game is unpaused
+    }
   }
 
   gameOver() {
     this.isGameOver = true;
+    this.togglePause();
+    this.mainMessages = ["Game Over"];
+    this.ui.display();
   }
 
   addBullet(bullet) {
@@ -138,7 +175,7 @@ class Game {
     }
     if (this.keyStates[" "]) {
       const bullet = this.player.shoot();
-      this.addBullet(bullet); 
+      this.addBullet(bullet);
     }
   }
 
@@ -208,16 +245,13 @@ class Game {
       }
     }
 
+    this.ui.display();
     this.lastFrameTime = currentTime;
     requestAnimationFrame(this.loop);
   }
 
   start() {
     this.loop(0);
-  }
-
-  togglePause() {
-    this.isPaused = !this.isPaused;
   }
 }
 

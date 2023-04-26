@@ -4,10 +4,10 @@ describe("Game", () => {
 
   beforeEach(() => {
     container = document.createElement("div");
-    container.style.width = "774px";
+    container.style.width = "674px";
     container.style.height = "674px";
     Object.defineProperty(container, "clientWidth", {
-      value: 774,
+      value: 674,
     });
     Object.defineProperty(container, "clientHeight", {
       value: 674,
@@ -25,7 +25,7 @@ describe("Game", () => {
     expect(game.keyStates).toEqual({
       ArrowLeft: false,
       ArrowRight: false,
-      " ": false
+      " ": false,
     });
   });
 
@@ -122,12 +122,36 @@ describe("Game", () => {
     gameOverSpy.mockRestore();
   });
 
+  test("UI display method is called within the game loop", () => {
+    // 1. Create a spy for game.ui.display()
+    const uiDisplaySpy = jest.spyOn(game.ui, "display");
+
+    // 2. Run the game loop for a specific amount of time
+    jest.useFakeTimers();
+    game.start();
+    jest.advanceTimersByTime(5000); // Advance time by 5000 ms
+
+    // 3. Check if the spy has been called
+    expect(uiDisplaySpy).toHaveBeenCalled();
+
+    // Clean up the spy
+    uiDisplaySpy.mockRestore();
+    jest.useRealTimers();
+  });
+
   describe("Stopping and starting", () => {
     const mockAudio = {
       play: jest.fn(),
       pause: jest.fn(),
       volume: 1.0,
     };
+
+    const uiMock = {
+      display: jest.fn(),
+    };
+
+    const customGame = new Game({ container: document.createElement("div") });
+    customGame.ui = uiMock;
 
     beforeEach(() => {
       window.HTMLMediaElement.prototype.play = jest.fn();
@@ -157,11 +181,72 @@ describe("Game", () => {
       jest.useRealTimers();
     });
 
+    test("gameOver sets the Game Over message and updates the UI", () => {
+      customGame.gameOver();
+      expect(customGame.mainMessages).toEqual(["Game Over"]);
+      expect(uiMock.display).toHaveBeenCalled();
+    });
+
+    test("levelUp increases the level and updates main messages", () => {
+      game.levelUp();
+
+      expect(game.level).toBe(2);
+      expect(game.mainMessages).toEqual(["Level 2", "Get ready!"]);
+    });
+
+    test("togglePause displays the correct messages", () => {
+      game.start();
+
+      game.togglePause(); // start playing
+      game.togglePause(); // pause
+      expect(game.mainMessages).toEqual(["Paused"]);
+
+      game.togglePause(); // resume playing
+      game.togglePause(["Level up!", "Get ready!"]); // pause with message
+      expect(game.mainMessages).toEqual(["Level up!", "Get ready!"]);
+    });
+
+    test("togglePause adds and removes paused class on the container", () => {
+      game.start();
+      game.togglePause();
+      expect(game.container.classList.contains("paused")).toBe(false);
+
+      game.togglePause();
+      expect(game.container.classList.contains("paused")).toBe(true);
+
+      game.togglePause();
+      expect(game.container.classList.contains("paused")).toBe(false);
+    });
+
+    test("levelUp increases the level and updates main messages", () => {
+      game.start();
+      game.togglePause();
+      game.levelUp();
+
+      expect(game.level).toBe(2);
+      expect(game.mainMessages).toEqual(["Level 2", "Get ready!"]);
+      expect(game.isPaused).toBe(true); // Check if the game is paused during level up
+    });
+
     test("pauses and resumes the game", () => {
       jest.useFakeTimers();
       game.start();
+      expect(game.mainMessages).toEqual([
+        "Level 1",
+        "Instructions:",
+        "Use Left and Right Arrow keys to move",
+        "Press Spacebar to shoot",
+        "Press P to pause/unpause",
+      ]);
+      const mainMessageContainer = container.querySelector(
+        ".main-message-display"
+      );
+      expect(mainMessageContainer.style.display).toBe("flex");
+      game.togglePause();
+      expect(game.mainMessages).toEqual([]);
 
       jest.advanceTimersByTime(5000);
+      expect(mainMessageContainer.style.display).toBe("none");
       const initialPlayerPosition = { ...game.player };
       const initialEnemyPosition = { ...game.enemies[0] };
       const initialBulletPosition = { ...game.bullets[0] };

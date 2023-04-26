@@ -22,8 +22,26 @@
   background-size: contain;
 }
 
+#game.paused:before {
+  filter: brightness(50%);
+}
+
 #player, .enemy, .bullet {
   position: absolute;
   top: 0;
   left: 0;
+}
+
+.main-message-display {
+  position: absolute;
+  font-size: 2rem;
+  color: white;
+  top: 0; 
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
