@@ -8,6 +8,7 @@ class Player {
     this.gameWidth = gameWidth;
     this.element = Player.createElement(this);
     this.onPlayerExplosion = onPlayerExplosion;
+    this.setupSounds();
   }
 
   static createElement(player) {
@@ -19,6 +20,17 @@ class Player {
     el.width = player.width;
     el.style.transform = `translate(${player.x}px, ${player.y}px)`;
     return el;
+  }
+
+  setupSounds() {
+    this.explosionSound = new AudioController({
+      src: "assets/sounds/playerExplosion.wav",
+      volume: 0.7,
+    });
+    this.shotSound = new AudioController({
+      src: "assets/sounds/playerShot.wav",
+      volume: 0.3,
+    });
   }
 
   move(direction, deltaTime) {
@@ -38,6 +50,7 @@ class Player {
   }
 
   shoot() {
+    this.shotSound.play();
     return new Bullet({
       x: this.center().x - 3,
       y: this.y + 5,
@@ -51,6 +64,7 @@ class Player {
   explode() {
     this.element.src = "assets/images/explosion-transparent.png";
     this.onPlayerExplosion();
+    this.explosionSound.play();
   }
 
   onCollision() {

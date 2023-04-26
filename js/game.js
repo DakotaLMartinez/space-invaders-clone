@@ -30,6 +30,7 @@ class Game {
 
     this.container.append(this.player.element);
     this.setupPlayerControls();
+    this.setupSounds();
   }
 
   setupPlayerControls() {
@@ -52,6 +53,21 @@ class Game {
     window.addEventListener("keyup", this.keyupHandler);
   }
 
+  setupSounds() {
+    this.gameOverSound = new AudioController({
+      src: "assets/sounds/gameOver.wav",
+      volume: 0.7,
+    });
+    this.backgroundMusic = new AudioController({
+      src: "assets/sounds/Otjanbird-Pt-1.mp3",
+      isLoop: true,
+      volume: 0.7,
+    });
+    setTimeout(() => {
+      this.backgroundMusic.play()
+    }, 200)
+  }
+
   gameOver() {
     this.isGameOver = true;
     this.enemies.forEach((enemy) => {
@@ -66,7 +82,6 @@ class Game {
   }
 
   enemyBulletHandler(e) {
-    console.log("handler running");
     const bullet = e.detail.bullet;
     this.addBullet(bullet);
   }
@@ -153,6 +168,7 @@ class Game {
 
   loop(currentTime) {
     if (this.isGameOver) {
+      this.gameOverSound.play()
       return;
     }
     // Calculate deltaTime

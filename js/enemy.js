@@ -10,12 +10,13 @@ class Enemy {
     this.onShoot = onShoot;
     this.shootInterval = 3000; // Shoot every 3000 ms
     this.shootTimer = null;
+    this.setupSounds();
     this.startShooting();
   }
 
   static createElement(enemy) {
     const el = document.createElement("img");
-    el.class = "enemy";
+    el.className = "enemy";
     el.src = "assets/images/transparent-enemy.png";
     el.alt = "enemy";
     el.height = enemy.height;
@@ -24,9 +25,21 @@ class Enemy {
     return el;
   }
 
+  setupSounds() {
+    this.explosion = new AudioController({
+      src: "assets/sounds/enemyExplosion.wav",
+      volume: 0.5,
+    });
+    this.shot = new AudioController({
+      src: "assets/sounds/enemyShot.wav",
+      volume: 0.3,
+    });
+  }
+
   onCollision() {
     // Do something when the enemy is hit by a player's bullet
     this.element.src = "assets/images/explosion-transparent.png";
+    this.explosion.play();
     this.dead = true;
     this.stopShooting();
     window.setTimeout(() => {
@@ -53,8 +66,8 @@ class Enemy {
       color: "white",
       speed: { x: 0, y: 3.5 },
     });
-    console.log('this.x', this.x, 'bullet.x', bullet.x)
     this.onShoot(bullet);
+    this.shot.play();
   }
 
   move(deltaTime) {

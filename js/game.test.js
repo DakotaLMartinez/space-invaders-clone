@@ -12,8 +12,6 @@ describe("Game", () => {
     Object.defineProperty(container, "clientHeight", {
       value: 774,
     });
-    console.log(container.style.width);
-    console.log(container.clientWidth);
     game = new Game({ container });
   });
 
