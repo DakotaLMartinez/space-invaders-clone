@@ -1,14 +1,19 @@
 describe("Enemy", () => {
   let enemy;
+  let game;
+  let container;
 
   beforeEach(() => {
+    container = document.createElement("div");
+    game = new Game({ container });
     enemy = new Enemy({
       x: 100,
       y: 0,
       width: 46,
       height: 82,
       gameWidth: 774,
-      onShoot: () => {}
+      onShoot: () => {},
+      game: game,
     });
   });
 
@@ -19,6 +24,7 @@ describe("Enemy", () => {
     expect(enemy.height).toBe(82);
     expect(enemy.gameWidth).toBe(774);
     expect(enemy.element).toBeTruthy();
+    expect(enemy.game).toBe(game);
   });
 
   test("onCollision removes enemy element", () => {
@@ -28,39 +34,59 @@ describe("Enemy", () => {
   });
 
   test("Enemy stops shooting when destroyed", () => {
+    jest.useFakeTimers();
+
     const onShootMock = jest.fn();
+    const game = { isPaused: false };
     const enemy = new Enemy({
       x: 10,
       y: 10,
       width: 50,
       height: 50,
-      speed: 2,
+      speed: { x: 0, y: 2 },
       gameWidth: 500,
       onShoot: onShootMock,
+      game: game,
     });
 
-    const stopShootingSpy = jest.spyOn(enemy, "stopShooting");
-
     enemy.onCollision(); // Destroy the enemy
+    jest.advanceTimersByTime(enemy.shootInterval * 3);
 
-    expect(stopShootingSpy).toHaveBeenCalled();
+    expect(onShootMock).toHaveBeenCalledTimes(0);
 
-    stopShootingSpy.mockRestore();
+    jest.useRealTimers();
   });
 
-  test("startShooting and stopShooting control bullet shooting", () => {
+  test("update controls bullet shooting", () => {
     jest.useFakeTimers();
-    const shootSpy = jest.spyOn(enemy, "shoot");
 
-    enemy.startShooting();
+    const onShootMock = jest.fn();
+    const game = { isPaused: false };
+    const enemy = new Enemy({
+      x: 10,
+      y: 10,
+      width: 50,
+      height: 50,
+      gameWidth: 500,
+      speed: { x: 0, y: 2 },
+      onShoot: onShootMock,
+      game: game,
+    });
+
+    const deltaTime = 1000 / 60; // Assuming 60 fps, deltaTime is 16.66.. ms per frame
+    for (let i = 0; i < 3; i++) {
+      jest.advanceTimersByTime(enemy.shootInterval);
+      enemy.update(deltaTime * enemy.shootInterval);
+    }
+
+    expect(onShootMock).toHaveBeenCalledTimes(3);
+
+    enemy.onCollision(); // Destroy the enemy
     jest.advanceTimersByTime(enemy.shootInterval * 3);
-    expect(shootSpy).toHaveBeenCalledTimes(3);
+    enemy.update(deltaTime * enemy.shootInterval * 3);
 
-    enemy.stopShooting();
-    jest.advanceTimersByTime(enemy.shootInterval * 3);
-    expect(shootSpy).toHaveBeenCalledTimes(3);
+    expect(onShootMock).toHaveBeenCalledTimes(3);
 
-    shootSpy.mockRestore();
     jest.useRealTimers();
   });
 
@@ -81,5 +107,4 @@ describe("Enemy", () => {
     expect(onShootMock).toHaveBeenCalled();
     expect(onShootMock.mock.calls[0][0]).toBeInstanceOf(Bullet);
   });
-
 });

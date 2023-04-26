@@ -5,12 +5,12 @@ describe("Game", () => {
   beforeEach(() => {
     container = document.createElement("div");
     container.style.width = "774px";
-    container.style.height = "774px";
+    container.style.height = "674px";
     Object.defineProperty(container, "clientWidth", {
       value: 774,
     });
     Object.defineProperty(container, "clientHeight", {
-      value: 774,
+      value: 674,
     });
     game = new Game({ container });
   });
@@ -101,20 +101,6 @@ describe("Game", () => {
     expect(game.container.contains(game.enemies[0].element)).toBe(true);
   });
 
-  test("startSpawningEnemies and stopSpawningEnemies control enemy spawning", () => {
-    jest.useFakeTimers();
-
-    game.startSpawningEnemies();
-    jest.advanceTimersByTime(game.enemySpawnInterval * 3);
-    expect(game.enemies.length).toBe(4);
-
-    game.stopSpawningEnemies();
-    jest.advanceTimersByTime(game.enemySpawnInterval * 3);
-    expect(game.enemies.length).toBe(4);
-
-    jest.useRealTimers();
-  });
-
   test("Game loop stops when the player is destroyed", () => {
     const game = new Game({ container });
 
@@ -135,19 +121,85 @@ describe("Game", () => {
     gameOverSpy.mockRestore();
   });
 
-  test("Game over calls appropriate methods to stop the game", () => {
-    const stopSpawningEnemiesSpy = jest.spyOn(game, "stopSpawningEnemies");
-    const enemyStopShootingSpy = jest.spyOn(Enemy.prototype, "stopShooting");
+  describe("Stopping and starting", () => {
+    const mockAudio = {
+      play: jest.fn(),
+      pause: jest.fn(),
+      volume: 1.0,
+    };
 
-    game.spawnEnemy();
+    beforeEach(() => {
+      window.HTMLMediaElement.prototype.play = jest.fn();
+      window.HTMLMediaElement.prototype.pause = jest.fn();
+      global.Audio = jest.fn(() => {
+        return { ...mockAudio };
+      });
+      AudioController.sounds = [];
+    });
 
-    // Call the gameOver method
-    game.gameOver();
+    test("Game over calls stops new enemies and bullets from being generated", () => {
+      jest.useFakeTimers();
+      game.start();
 
-    expect(stopSpawningEnemiesSpy).toHaveBeenCalled(); // stopSpawningEnemies called
-    expect(enemyStopShootingSpy).toHaveBeenCalled(); // stopShooting called on the enemy
+      jest.advanceTimersByTime(6000);
+      const enemyCount = game.enemies.length;
+      const bulletCount = game.bullets.length;
+      console.log(enemyCount + bulletCount);
+      // Call the gameOver method
+      game.gameOver();
 
-    stopSpawningEnemiesSpy.mockRestore();
-    enemyStopShootingSpy.mockRestore();
+      jest.advanceTimersByTime(10000);
+
+      expect(game.enemies.length).toEqual(enemyCount);
+      expect(game.bullets.length).toEqual(bulletCount);
+
+      jest.useRealTimers();
+    });
+
+    test("pauses and resumes the game", () => {
+      jest.useFakeTimers();
+      game.start();
+
+      jest.advanceTimersByTime(5000);
+      const initialPlayerPosition = { ...game.player };
+      const initialEnemyPosition = { ...game.enemies[0] };
+      const initialBulletPosition = { ...game.bullets[0] };
+
+      game.togglePause();
+
+      jest.advanceTimersByTime(5000); // Advance time by 5000 ms
+
+      const keydownEvent = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+      const keyupEvent = new KeyboardEvent("keyup", { key: "ArrowLeft" });
+
+      window.dispatchEvent(keydownEvent);
+
+      jest.advanceTimersByTime(1000);
+      // Simulate releasing the left arrow key
+      window.dispatchEvent(keyupEvent);
+
+      // Check that the player's position has not changed
+      expect(game.player.x).toEqual(initialPlayerPosition.x);
+      expect(game.enemies[0]).toEqual(initialEnemyPosition);
+      expect(game.bullets[0]).toEqual(initialBulletPosition);
+
+      // Check if the player, enemies, and bullets have not moved
+
+      game.togglePause();
+      window.dispatchEvent(keydownEvent);
+
+      jest.advanceTimersByTime(1000);
+      // Simulate releasing the left arrow key
+      window.dispatchEvent(keyupEvent);
+      jest.advanceTimersByTime(5000); // Advance time by 5000 ms
+      // Check if the player, enemies, and bullets have moved
+      expect(game.player.x).not.toEqual(initialPlayerPosition.x);
+      expect(game.enemies[0]).not.toEqual(initialEnemyPosition);
+      expect(game.bullets[0]).not.toEqual(initialBulletPosition);
+      // Clean up the event listeners
+      window.removeEventListener("keydown", game.keydownHandler);
+      window.removeEventListener("keyup", game.keyupHandler);
+      jest.useRealTimers();
+    });
   });
 });
