@@ -28,6 +28,7 @@ class Game {
     this.keyStates = {
       ArrowLeft: false,
       ArrowRight: false,
+      " ": false
     };
 
     this.container.append(this.player.element);
@@ -39,11 +40,6 @@ class Game {
     this.keydownHandler = (e) => {
       if (this.keyStates.hasOwnProperty(e.key)) {
         this.keyStates[e.key] = true;
-      }
-
-      if (e.code === "Space") {
-        const bullet = this.player.shoot();
-        this.addBullet(bullet);
       }
 
       if (e.key === "p" || e.key === "P") {
@@ -139,6 +135,10 @@ class Game {
     }
     if (this.keyStates.ArrowRight) {
       this.player.update("right", deltaTime);
+    }
+    if (this.keyStates[" "]) {
+      const bullet = this.player.shoot();
+      this.addBullet(bullet); 
     }
   }
 

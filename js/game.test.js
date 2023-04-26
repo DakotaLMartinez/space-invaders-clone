@@ -25,6 +25,7 @@ describe("Game", () => {
     expect(game.keyStates).toEqual({
       ArrowLeft: false,
       ArrowRight: false,
+      " ": false
     });
   });
 
