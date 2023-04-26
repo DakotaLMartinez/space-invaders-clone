@@ -8,6 +8,8 @@ class Player {
     this.gameWidth = gameWidth;
     this.element = Player.createElement(this);
     this.onPlayerExplosion = onPlayerExplosion;
+    this.firingCooldown = 15; // In frames, set to desired cooldown duration
+    this.lastShotTime = -this.firingCooldown;
     this.setupSounds();
   }
 
@@ -47,6 +49,19 @@ class Player {
     if (["left", "right"].includes(direction)) {
       this.move(direction, deltaTime);
     }
+  }
+
+  shootIfReady(deltaTime) {
+    this.lastShotTime += deltaTime;
+    if (this.lastShotTime >= this.firingCooldown) {
+      this.lastShotTime = 0;
+      return this.shoot();
+    }
+    return null;
+  }
+
+  refreshCooldown(deltaTime) {
+    this.lastShotTime += deltaTime;
   }
 
   shoot() {

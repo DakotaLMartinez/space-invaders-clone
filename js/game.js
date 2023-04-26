@@ -174,8 +174,12 @@ class Game {
       this.player.update("right", deltaTime);
     }
     if (this.keyStates[" "]) {
-      const bullet = this.player.shoot();
-      this.addBullet(bullet);
+      const bullet = this.player.shootIfReady(deltaTime);
+      if (bullet) {
+        this.addBullet(bullet);
+      }
+    } else {
+      this.player.refreshCooldown(deltaTime);
     }
   }
 
@@ -199,7 +203,7 @@ class Game {
     const enemyWidth = 46;
     const enemyHeight = 82;
     const x = Math.random() * (this.container.clientWidth - enemyWidth);
-    const y = 0;
+    const y = 46;
     const enemy = new Enemy({
       x,
       y,

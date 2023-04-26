@@ -2,25 +2,26 @@
 
 describe("Player", () => {
   let player;
-
+  const shootMock = jest.fn();
   beforeEach(() => {
     player = new Player({
-      x: 350,
-      y: 700,
-      width: 50,
-      height: 50,
+      x: 300,
+      y: 600,
+      width: 74,
+      height: 74,
       speed: 5,
-      gameWidth: 774,
+      gameWidth: 674,
+      onPlayerExplosion: () => {},
     });
   });
 
   test("constructor initializes player properties correctly", () => {
-    expect(player.x).toBe(350);
-    expect(player.y).toBe(700);
-    expect(player.width).toBe(50);
-    expect(player.height).toBe(50);
+    expect(player.x).toBe(300);
+    expect(player.y).toBe(600);
+    expect(player.width).toBe(74);
+    expect(player.height).toBe(74);
     expect(player.speed).toBe(5);
-    expect(player.gameWidth).toBe(774);
+    expect(player.gameWidth).toBe(674);
 
     expect(player.element).toBeDefined();
     expect(player.element.src).toContain("assets/images/ship-transparent.png");
@@ -74,4 +75,23 @@ describe("Player", () => {
     expect(bullet.x).toBe(initialX);
     expect(bullet.y).toBe(initialY);
   });
+
+  test("Player's shootIfReady method respects firingCooldown", () => {
+    player.shoot = shootMock;
+    player.firingCooldown = 10; // Set custom firingCooldown for testing
+    player.lastShotTime = 0;
+    player.shootIfReady(player.firingCooldown); // deltaTime equal to firingCooldown
+    expect(shootMock).toHaveBeenCalledTimes(1);
+
+    player.shootIfReady(player.firingCooldown / 2); // deltaTime less than firingCooldown
+    expect(shootMock).toHaveBeenCalledTimes(1); // shoot method should not be called again
+  });
+
+  test("refreshCooldown can increase the timeSinceLastShot when not shooting", () => {
+    player.lastShotTime = 10;
+    const deltaTime = 5;
+    player.refreshCooldown(deltaTime);
+
+    expect(player.lastShotTime).toBe(15); // 10 + 5
+  })
 });
