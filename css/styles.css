@@ -1,8 +1,8 @@
 #game {
   position: relative;
   overflow: hidden;
-  height: 674px;
-  width: 774px;
+  height: 644px;
+  width: 644px;
   margin: 0 auto;
   padding: 0;
   opacity: 1;
@@ -19,7 +19,7 @@
     fixed;
   z-index: -1;
   filter: brightness(80%);
-  background-size: cover;
+  background-size: contain;
 }
 
 #player, .enemy, .bullet {
