@@ -22,6 +22,7 @@ describe("Game", () => {
     expect(game.frameRate).toBe(60);
     expect(game.frameDuration).toBe(1000 / game.frameRate);
     expect(game.player).toBeDefined();
+    expect(game.enemyFiringRate).toBe(4);
     expect(game.keyStates).toEqual({
       ArrowLeft: false,
       ArrowRight: false,
@@ -97,9 +98,11 @@ describe("Game", () => {
 
   test("spawnEnemy method adds an enemy to the game", () => {
     const initialEnemyCount = game.enemies.length;
-    game.spawnEnemy();
+    game.enemyFiringRate = 1;
+    const enemy = game.spawnEnemy();
     expect(game.enemies.length).toBe(initialEnemyCount + 1);
     expect(game.container.contains(game.enemies[0].element)).toBe(true);
+    expect(enemy.shootInterval).toEqual(60 * game.enemyFiringRate)
   });
 
   test("Game loop stops when the player is destroyed", () => {
@@ -138,6 +141,105 @@ describe("Game", () => {
     uiDisplaySpy.mockRestore();
     jest.useRealTimers();
   });
+  
+  describe("leveling up", () => {
+    test("levelUp increases the level and updates main messages", () => {
+      game.levelUp();
+  
+      expect(game.level).toBe(2);
+      expect(game.mainMessages).toEqual(["Level 2", "Get ready!"]);
+    });
+
+    test("increaseScore() should increase score by pointsPerShipDestroyed when an enemy is destroyed", () => {
+      game.pointsPerShipDestroyed = 5;
+      game.score = 0;
+      game.increaseScore();
+
+      expect(game.score).toBe(5);
+    });
+
+    test("should call levelUp() when score reaches scoreToLevelUp", () => {
+      const levelUpSpy = jest.spyOn(game, "levelUp");
+      game.scoreToLevelUp = 100;
+      game.score = 95;
+      game.pointsPerShipDestroyed = 5;
+      game.increaseScore();
+
+      expect(levelUpSpy).toHaveBeenCalled();
+    });
+
+    test("should increase pointsPerShipDestroyed when leveling up", () => {
+      game.level = 1;
+      game.pointsPerShipDestroyed = 5;
+      game.levelUp();
+
+      expect(game.pointsPerShipDestroyed).toBe(10); // Increment value as needed
+    });
+
+    test("should increase scoreToLevelUp when leveling up", () => {
+      game.level = 1;
+      game.scoreToLevelUp = 100;
+      game.levelUp();
+
+      expect(game.scoreToLevelUp).toBe(250); // Increment value as needed
+    });
+
+    test("level up process is triggered when the score reaches the required threshold", () => {
+      const levelUpSpy = jest.spyOn(game, "levelUp");
+      const initialScoreToLevelUp = game.scoreToLevelUp;
+
+      // Simulate enemy spaceship destructions until the score reaches the threshold
+      while (game.score < initialScoreToLevelUp) {
+        game.increaseScore();
+      }
+
+      expect(levelUpSpy).toHaveBeenCalled();
+
+      // Clean up the spy
+      levelUpSpy.mockRestore();
+    });
+
+    test("score increases when an enemy spaceship is destroyed", () => {
+      const initialScore = game.score;
+      const initialPointsPerShipDestroyed = game.pointsPerShipDestroyed;
+
+      // Create an enemy and add it to the game
+      game.spawnEnemy();
+      const enemy = game.enemies[game.enemies.length - 1];
+
+      // Call onCollision() on the enemy
+      game.destroyEnemy(enemy);
+
+      expect(game.score).toBe(initialScore + initialPointsPerShipDestroyed);
+    });
+
+    test("should call increaseEnemyFiringRate() when levelUp() gets called", () => {
+      const increaseEnemyFiringRateSpy = jest.spyOn(
+        game,
+        "increaseEnemyFiringRate"
+      );
+      game.levelUp();
+
+      expect(increaseEnemyFiringRateSpy).toHaveBeenCalled();
+
+      // Clean up the spy
+      increaseEnemyFiringRateSpy.mockRestore();
+    });
+
+    test("should call increaseEnemySpawnRate() when levelUp() gets called", () => {
+      const increaseEnemySpawnRate = jest.spyOn(
+        game,
+        "increaseEnemySpawnRate"
+      );
+      game.levelUp();
+
+      expect(increaseEnemySpawnRate).toHaveBeenCalled();
+
+      // Clean up the spy
+      increaseEnemySpawnRate.mockRestore();
+    });
+  })
+
 
   describe("Stopping and starting", () => {
     const mockAudio = {
@@ -185,13 +287,6 @@ describe("Game", () => {
       customGame.gameOver();
       expect(customGame.mainMessages).toEqual(["Game Over"]);
       expect(uiMock.display).toHaveBeenCalled();
-    });
-
-    test("levelUp increases the level and updates main messages", () => {
-      game.levelUp();
-
-      expect(game.level).toBe(2);
-      expect(game.mainMessages).toEqual(["Level 2", "Get ready!"]);
     });
 
     test("togglePause displays the correct messages", () => {

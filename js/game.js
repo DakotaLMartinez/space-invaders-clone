@@ -5,6 +5,8 @@ class Game {
     this.isPaused = true;
     this.level = 1;
     this.score = 0;
+    this.pointsPerShipDestroyed = 5;
+    this.scoreToLevelUp = 10;
     this.mainMessages = [
       "Level 1",
       "Instructions:",
@@ -20,6 +22,7 @@ class Game {
     this.timeSinceLastSpawn = 60 * 3;
     this.enemySpawnInterval = 60 * 3; // Spawn an enemy every 3 seconds at 60fps
     this.enemySpawnTimer = null;
+    this.enemyFiringRate = 4;
     this.lastFrameTime = null;
     this.frameRate = 60;
     this.frameDuration = 1000 / this.frameRate;
@@ -84,11 +87,29 @@ class Game {
     this.isPaused = true;
     this.mainMessages = [`Level ${this.level}`, "Get ready!"];
     this.ui.display();
+    this.pointsPerShipDestroyed *= 2;
+    this.scoreToLevelUp = Math.floor(this.scoreToLevelUp * 2.5);
+    this.increaseEnemyFiringRate();
+    this.increaseEnemySpawnRate();
 
     setTimeout(() => {
       this.togglePause();
-      // Update enemy spawn and fire rates here
     }, 3000); // Pause for 3 seconds before resuming
+  }
+
+  increaseScore() {
+    this.score += this.pointsPerShipDestroyed;
+    if (this.score >= this.scoreToLevelUp) {
+      this.levelUp();
+    }
+  }
+
+  increaseEnemyFiringRate() {
+    this.enemyFiringRate *= 0.9;
+  }
+
+  increaseEnemySpawnRate() {
+    this.enemySpawnInterval *= 0.93
   }
 
   togglePause(messages = ["Paused"]) {
@@ -114,11 +135,6 @@ class Game {
   addBullet(bullet) {
     this.bullets.push(bullet);
     this.container.appendChild(bullet.element);
-  }
-
-  enemyBulletHandler(e) {
-    const bullet = e.detail.bullet;
-    this.addBullet(bullet);
   }
 
   removeBullet(bullet) {
@@ -153,8 +169,7 @@ class Game {
         // Check for collisions with enemies
         this.enemies.forEach((enemy) => {
           if (bullet.isColliding(enemy)) {
-            enemy.onCollision();
-            this.removeEnemy(enemy);
+            this.destroyEnemy(enemy);
             collided = true;
           }
         });
@@ -189,7 +204,9 @@ class Game {
     });
   }
 
-  removeEnemy(enemy) {
+  destroyEnemy(enemy) {
+    enemy.onCollision();
+    this.increaseScore();
     const index = this.enemies.indexOf(enemy);
     if (index > -1) {
       this.enemies.splice(index, 1);
@@ -213,12 +230,14 @@ class Game {
       onShoot: (bullet) => {
         this.addBullet(bullet);
       },
+      enemyFiringRate: this.enemyFiringRate,
       speed: { x: 0, y: 0 },
       game: this,
     });
 
     this.enemies.push(enemy);
     this.container.appendChild(enemy.element);
+    return enemy;
   }
 
   loop(currentTime) {

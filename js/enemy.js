@@ -1,5 +1,15 @@
 class Enemy {
-  constructor({ x, y, width, height, gameWidth, speed, onShoot, game }) {
+  constructor({
+    x,
+    y,
+    width,
+    height,
+    gameWidth,
+    speed,
+    onShoot,
+    enemyFiringRate,
+    game,
+  }) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -8,7 +18,7 @@ class Enemy {
     this.speed = speed;
     this.element = Enemy.createElement(this);
     this.onShoot = onShoot;
-    this.shootInterval = 60 * 4; // Shoot every 4 seconds at 60 fps
+    this.shootInterval = 60 * enemyFiringRate; // Shoot every 4 seconds at 60 fps
     this.shootTimer = null;
     this.timeSinceLastShot = 0;
     this.setupSounds();
@@ -44,7 +54,7 @@ class Enemy {
       this.explode();
     }
   }
-  
+
   explode() {
     this.element.src = "assets/images/explosion-transparent.png";
     this.explosion.play();

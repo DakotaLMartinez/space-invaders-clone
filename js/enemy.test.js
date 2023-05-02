@@ -6,13 +6,16 @@ describe("Enemy", () => {
   beforeEach(() => {
     container = document.createElement("div");
     game = new Game({ container });
+    game.enemyFiringRate = 4;
     enemy = new Enemy({
       x: 100,
       y: 0,
       width: 46,
       height: 82,
       gameWidth: 774,
-      onShoot: () => {},
+      speed: {x: 0, y: 0},
+      onShoot: () => { },
+      enemyFiringRate: game.enemyFiringRate,
       game: game,
     });
   });
@@ -59,26 +62,16 @@ describe("Enemy", () => {
 
   test("update controls bullet shooting", () => {
     jest.useFakeTimers();
-
     const onShootMock = jest.fn();
-    const game = { isPaused: false };
-    const enemy = new Enemy({
-      x: 10,
-      y: 10,
-      width: 50,
-      height: 50,
-      gameWidth: 500,
-      speed: { x: 0, y: 2 },
-      onShoot: onShootMock,
-      game: game,
-    });
+    game.onShoot = onShootMock;
+    
 
     const deltaTime = 1000 / 60; // Assuming 60 fps, deltaTime is 16.66.. ms per frame
     for (let i = 0; i < 3; i++) {
       jest.advanceTimersByTime(enemy.shootInterval);
       enemy.update(deltaTime * enemy.shootInterval);
     }
-
+    
     expect(onShootMock).toHaveBeenCalledTimes(3);
 
     enemy.onCollision(); // Destroy the enemy
